@@ -1,143 +1,232 @@
 @extends('layouts.index')
 
 @section('content')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css">
+
     <div class="container mt-4">
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h4>Data Lokasi</h4>
+                <h4 class="mb-0">Input Data Lokasi</h4>
             </div>
             <div class="card-body">
                 @if (session('success'))
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
 
-                <form action="{{ route('lokasi.store') }}" method="POST">
-                    @csrf
-
-                    <div class="form-group">
-                        <label for="business_type">Jenis Bisnis</label>
-                        <select name="business_type" id="business_type" class="form-control" onchange="updateParameters()">
-                            <option value="">-- Pilih Jenis Bisnis --</option>
-                            <option value="makanan">Makanan</option>
-                            <option value="minuman">Minuman</option>
-                            <option value="jasa">Jasa</option>
-                        </select>
+                <!-- Stepper -->
+                <div id="stepper" class="bs-stepper">
+                    <div class="bs-stepper-header" role="tablist">
+                        <div class="step" data-target="#step-1">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">1</span>
+                                <span class="bs-stepper-label">Pilih Jenis & Lokasi</span>
+                            </button>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step" data-target="#step-2">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">2</span>
+                                <span class="bs-stepper-label">Isi Parameter</span>
+                            </button>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step" data-target="#step-3">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">3</span>
+                                <span class="bs-stepper-label">Konversi Crisp</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <div id="locations" class="mt-3"></div>
+                    <div class="bs-stepper-content">
+                        <form id="lokasi-form" action="{{ route('lokasi.store') }}" method="POST">
+                            @csrf
 
-                    <div class="mt-3">
-                        <button type="button" class="btn btn-primary" onclick="addLocation()">Tambah Lokasi</button>
-                        <button type="submit" class="btn btn-success">Simpan</button>
+                            <!-- Step 1 -->
+                            <div id="step-1" class="content" role="tabpanel">
+                                <div class="form-group">
+                                    <label for="business_type">Jenis Bisnis</label>
+                                    <select name="business_type" id="business_type" class="form-control"
+                                        onchange="updateParameters()">
+                                        <option value="">-- Pilih Jenis Bisnis --</option>
+                                        <option value="makanan">Makanan</option>
+                                        <option value="minuman">Minuman</option>
+                                    </select>
+                                </div>
+
+                                <div id="locations" class="mt-3"></div>
+
+                                <button type="button" class="btn btn-primary mt-3" onclick="addLocation()">Tambah
+                                    Lokasi</button>
+                                <div class="mt-4">
+                                    <button type="button" class="btn btn-primary" onclick="stepper.next()">Lanjut</button>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div id="step-2" class="content" role="tabpanel">
+                                <div id="parameter-container" class="row"></div>
+                                <div class="mt-4">
+                                    <button type="button" class="btn btn-secondary"
+                                        onclick="stepper.previous()">Kembali</button>
+                                    <button type="button" class="btn btn-primary" onclick="stepper.next()">Lanjut ke
+                                        Konversi</button>
+                                </div>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div id="step-3" class="content" role="tabpanel">
+                                <div class="text-right mb-3">
+                                    <button type="button" class="btn btn-info" onclick="hitungKonversi()">Tampilkan Hasil
+                                        Konversi</button>
+                                </div>
+
+                                <div id="crisp-result" class="row"></div>
+
+                                <div class="mt-4">
+                                    <button type="button" class="btn btn-secondary"
+                                        onclick="stepper.previous()">Kembali</button>
+                                    <button type="submit" class="btn btn-success">Simpan & Lanjut Proses</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
+
             </div>
         </div>
     </div>
 
+    <!-- Stepper & Script -->
+    <script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
     <script>
+        const stepper = new window.Stepper(document.querySelector('#stepper'));
         const availableLocations = @json($availableLocations);
         let locationCount = 0;
         let selectedParameters = [];
 
         const parameters = {
-            makanan: [
-                "Kepadatan Penduduk", "Lalu Lintas Kendaraan", "Jenis Lingkungan",
-                "Daya Beli Masyarakat", "Kompetitor", "Area Keramaian", "Ketersediaan Ruko"
+            makanan: ["Aksesibilitas", "Visibilitas", "Daya Beli Masyarakat", "Kompetitor / Persaingan",
+                "Ketersediaan Infrastruktur", "Lingkungan Sekitar"
             ],
-            minuman: [
-                "Lalu Lintas Pejalan Kaki", "Tempat Nongkrong Terdekat", "Target Pasar",
-                "Estetika Lokasi", "Daya Beli Masyarakat", "Kompetitor"
-            ],
-            jasa: [
-                "Visibilitas Lokasi", "Parkiran", "Kedekatan Perumahan",
-                "Akses Transportasi Umum", "Kebisingan", "Kompetitor", "Keamanan Area"
+            minuman: ["Aksesibilitas", "Visibilitas", "Daya Beli Masyarakat", "Kompetitor / Persaingan",
+                "Ketersediaan Infrastruktur", "Lingkungan Sekitar"
             ]
         };
 
+        const parameterDescriptions = {
+            "Aksesibilitas": "Kemudahan akses menuju lokasi oleh pelanggan.",
+            "Visibilitas": "Seberapa mudah lokasi terlihat dari jalan utama atau keramaian.",
+            "Daya Beli Masyarakat": "Kemampuan finansial masyarakat di sekitar lokasi.",
+            "Kompetitor / Persaingan": "Jumlah pesaing sejenis di sekitar lokasi.",
+            "Ketersediaan Infrastruktur": "Kelengkapan fasilitas penunjang seperti parkir, listrik, dll.",
+            "Lingkungan Sekitar": "Kondisi sosial dan keamanan lingkungan sekitar lokasi."
+        };
+
         const linguisticOptions = {
-            "Kepadatan Penduduk": ["Rendah", "Sedang", "Tinggi"],
-            "Lalu Lintas Kendaraan": ["Sepi", "Sedang", "Ramai"],
-            "Jenis Lingkungan": ["Tidak Kondusif", "Netral", "Kondusif"],
-            "Daya Beli Masyarakat": ["Rendah", "Sedang", "Tinggi"],
-            "Kompetitor": ["Banyak", "Sedang", "Sedikit"],
-            "Area Keramaian": ["Tidak Ramai", "Sedang", "Ramai"],
-            "Ketersediaan Ruko": ["Tidak Tersedia", "Terbatas", "Tersedia"],
+            "Aksesibilitas": ["Tidak Mudah", "Cukup Mudah", "Sangat Mudah"],
+            "Visibilitas": ["Tidak Terlihat", "Terlihat Sebagian", "Sangat Terlihat"],
+            "Daya Beli Masyarakat": ["Rendah", "Menengah", "Tinggi"],
+            "Kompetitor / Persaingan": ["< 2", "2 - 4", "> 4"],
+            "Ketersediaan Infrastruktur": ["Tidak Lengkap", "Cukup", "Lengkap"],
+            "Lingkungan Sekitar": ["Tidak Mendukung", "Netral", "Sangat Mendukung"]
+        };
 
-            "Lalu Lintas Pejalan Kaki": ["Sepi", "Sedang", "Ramai"],
-            "Tempat Nongkrong Terdekat": ["Tidak Ada", "Sedikit", "Banyak"],
-            "Target Pasar": ["Tidak Sesuai", "Cukup", "Sesuai"],
-            "Estetika Lokasi": ["Buruk", "Sedang", "Menarik"],
-
-            "Visibilitas Lokasi": ["Tidak Terlihat", "Cukup", "Jelas"],
-            "Parkiran": ["Tidak Ada", "Sedikit", "Banyak"],
-            "Kedekatan Perumahan": ["Jauh", "Sedang", "Dekat"],
-            "Akses Transportasi Umum": ["Sulit", "Sedang", "Mudah"],
-            "Kebisingan": ["Tinggi", "Sedang", "Rendah"],
-            "Keamanan Area": ["Rawan", "Sedang", "Aman"]
+        const crispMap = {
+            "Tidak Mudah": 2,
+            "Cukup Mudah": 5,
+            "Sangat Mudah": 8,
+            "Tidak Terlihat": 2,
+            "Terlihat Sebagian": 5,
+            "Sangat Terlihat": 8,
+            "Rendah": 2,
+            "Menengah": 5,
+            "Tinggi": 8,
+            "< 2": 2,
+            "2 - 4": 5,
+            "> 4": 8,
+            "Tidak Lengkap": 2,
+            "Cukup": 5,
+            "Lengkap": 8,
+            "Tidak Mendukung": 2,
+            "Netral": 5,
+            "Sangat Mendukung": 8
         };
 
         function updateParameters() {
             const businessType = document.getElementById("business_type").value;
             const locationsDiv = document.getElementById("locations");
-            locationsDiv.innerHTML = "";
+            document.getElementById("parameter-container").innerHTML = '';
+            document.getElementById("crisp-result").innerHTML = '';
+            locationsDiv.innerHTML = '';
             locationCount = 0;
-
             selectedParameters = parameters[businessType] || [];
-            if (selectedParameters.length > 0) {
-                addLocation();
-            }
+            if (selectedParameters.length > 0) addLocation();
         }
 
         function addLocation() {
             locationCount++;
-            const div = document.createElement("div");
-            div.classList.add("card", "p-3", "mt-3");
-            div.id = `location_${locationCount}`;
 
-            const locationOptions = availableLocations.map(loc =>
+            const locDiv = document.createElement("div");
+            locDiv.classList.add("card", "p-3", "mt-3");
+            locDiv.id = `location_${locationCount}`;
+            const locOptions = availableLocations.map(loc =>
                 `<option value="${loc.latitude},${loc.longitude}" data-nama_lokasi="${loc.nama_lokasi}">
-                ${loc.nama_lokasi}
-            </option>`).join('');
+                    ${loc.nama_lokasi}
+                </option>`).join('');
 
-            const parameterInputs = selectedParameters.map(p => {
-                const options = linguisticOptions[p] || ["Rendah", "Sedang", "Tinggi"];
-                return `
-                <td>
-                    <select name="locations[${locationCount}][parameters][${p.replace(/\s+/g, '_').toLowerCase()}]" class="form-control">
-                        ${options.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
+            locDiv.innerHTML = `
+                <h5>Lokasi ${locationCount}</h5>
+                <div class="form-group">
+                    <label>Nama Lokasi</label>
+                    <select class="form-control" id="location_select_${locationCount}" onchange="setCoordinates(this, ${locationCount}, true)">
+                        <option value="">-- Pilih Lokasi --</option>
+                        ${locOptions}
                     </select>
-                </td>`;
-            }).join("");
+                    <input type="hidden" name="locations[${locationCount}][name]" id="location_name_${locationCount}">
+                </div>
+                <div class="form-group">
+                    <label>Latitude</label>
+                    <input type="text" name="locations[${locationCount}][latitude]" id="latitude_${locationCount}" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Longitude</label>
+                    <input type="text" name="locations[${locationCount}][longitude]" id="longitude_${locationCount}" class="form-control" readonly>
+                </div>`;
+            document.getElementById("locations").appendChild(locDiv);
 
-            div.innerHTML = `
-            <h5>Lokasi ${locationCount}</h5>
-            <div class="form-group">
-                <label>Nama Lokasi</label>
-                <select class="form-control" onchange="setCoordinates(this, ${locationCount})">
-                    <option value="">-- Pilih Lokasi --</option>
-                    ${locationOptions}
-                </select>
-                <input type="hidden" name="locations[${locationCount}][name]" id="location_name_${locationCount}">
-            </div>
-            <div class="form-group">
-                <label>Latitude</label>
-                <input type="text" name="locations[${locationCount}][latitude]" id="latitude_${locationCount}" class="form-control" readonly>
-            </div>
-            <div class="form-group">
-                <label>Longitude</label>
-                <input type="text" name="locations[${locationCount}][longitude]" id="longitude_${locationCount}" class="form-control" readonly>
-            </div>
-            <table class="table table-bordered mt-3">
-                <thead><tr>${selectedParameters.map(p => `<th>${p}</th>`).join("")}</tr></thead>
-                <tbody><tr>${parameterInputs}</tr></tbody>
-            </table>
-            <button type="button" class="btn btn-danger" onclick="removeLocation(${locationCount})">Hapus Lokasi</button>
-        `;
-            document.getElementById("locations").appendChild(div);
+            const paramContainer = document.getElementById("parameter-container");
+            const paramCard = document.createElement("div");
+            paramCard.className = "col-12 mb-4";
+            paramCard.id = `param_card_${locationCount}`;
+
+            paramCard.innerHTML = `
+                <div class="card shadow-sm border-info">
+                    <div class="card-header bg-info text-white font-weight-bold">
+                        Parameter Lokasi ${locationCount} (<span id="loc_name_label_${locationCount}">Belum Dipilih</span>)
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="param_inputs_${locationCount}">
+                            ${selectedParameters.map(p => {
+                                const options = linguisticOptions[p] || ["Rendah", "Sedang", "Tinggi"];
+                                const description = parameterDescriptions[p] || "";
+                                return `
+                                                                            <div class="col-md-6 mb-3">
+                                                                                <label class="font-weight-bold">${p}</label>
+                                                                                <small class="form-text text-muted">${description}</small>
+                                                                                <select name="locations[${locationCount}][parameters][${p.replace(/\s+/g, '_').toLowerCase()}]" 
+                                                                                    class="form-control" id="ling_${locationCount}_${p.replace(/\s+/g, '_')}">
+                                                                                    ${options.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
+                                                                                </select>
+                                                                            </div>`;
+                            }).join("")}
+                        </div>
+                    </div>
+                </div>`;
+            paramContainer.appendChild(paramCard);
         }
 
-        function setCoordinates(select, id) {
+        function setCoordinates(select, id, updateLabel = false) {
             const selected = select.options[select.selectedIndex];
             if (!selected.value) return;
 
@@ -147,13 +236,41 @@
             document.getElementById(`latitude_${id}`).value = lat;
             document.getElementById(`longitude_${id}`).value = lng;
             document.getElementById(`location_name_${id}`).value = name;
+
+            if (updateLabel) {
+                const label = document.getElementById(`loc_name_label_${id}`);
+                if (label) label.innerText = name;
+            }
         }
 
-        function removeLocation(id) {
-            const div = document.getElementById(`location_${id}`);
-            if (div) div.remove();
-        }
+        function hitungKonversi() {
+            const crispDiv = document.getElementById("crisp-result");
+            crispDiv.innerHTML = "";
 
-        document.addEventListener("DOMContentLoaded", updateParameters);
+            for (let i = 1; i <= locationCount; i++) {
+                const namaLokasi = document.getElementById(`location_name_${i}`).value || `Lokasi ${i}`;
+                let html = `<div class="col-md-6 mb-3">
+                    <div class="card border-success shadow">
+                        <div class="card-header bg-success text-white">
+                            <strong>Hasil Konversi Lokasi ${i}</strong> - ${namaLokasi}
+                        </div>
+                    <div class="card-body p-2">
+                        <ul class="list-group list-group-flush">`;
+
+                selectedParameters.forEach(p => {
+                    const inputId = `ling_${i}_${p.replace(/\s+/g, '_')}`;
+                    const selectedValue = document.getElementById(inputId)?.value;
+                    const crisp = crispMap[selectedValue] || '-';
+                    html += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        ${p}
+                        <span class="badge badge-primary">${selectedValue} → <strong>${crisp}</strong></span>
+                    </li>`;
+                });
+
+                html += `</ul></div></div></div>`;
+                crispDiv.innerHTML += html;
+            }
+        }
     </script>
 @endsection

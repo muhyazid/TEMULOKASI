@@ -1,24 +1,14 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FuzzyController;
 use App\Http\Controllers\LokasiController;
-use App\Http\Controllers\PerhitunganController;
-use App\Http\Controllers\HasilRekomendasiController;
-use App\Http\Controllers\ManajemenUserController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\PerhitunganController;
+use App\Http\Controllers\ManajemenUserController;
+use App\Http\Controllers\HasilRekomendasiController;
 use App\Http\Controllers\Admin\AdminDataLokasiController;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
 
 // =================== USER ROUTESSS =================== //
 Route::get('/dashboard', function () {
@@ -27,10 +17,10 @@ Route::get('/dashboard', function () {
 
 Route::get('/lokasi', [LokasiController::class, 'index'])->name('lokasi');
 Route::post('/lokasi/store', [LokasiController::class, 'store'])->name('lokasi.store');
-
 Route::get('/hasil-rekomendasi', [HasilRekomendasiController::class, 'index'])->name('hasil-rekomendasi');
-
 Route::get('/manajemen-user', [ManajemenUserController::class, 'index'])->name('manajemen-user');
+Route::get('/konversi-crisp', [FuzzyController::class, 'konversiCrisp'])->name('konversi.crisp');
+
 
 // =================== ADMIN ROUTES =================== //
 Route::prefix('admin')->name('admin.')->group(function () {

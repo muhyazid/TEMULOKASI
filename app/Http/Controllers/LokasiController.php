@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Location;
 use App\Models\DataLocation;
 use Illuminate\Http\Request;
+use App\Models\LinguistikNilai;
 use App\Models\LocationParameter;
 
 class LokasiController extends Controller
@@ -45,5 +46,12 @@ class LokasiController extends Controller
             }
         }
         return redirect()->route('lokasi')->with('success', 'Lokasi berhasil disimpan');
+    }
+    public function getCrispValue($parameter, $label)
+    {
+        $result = LinguistikNilai::where('parameter_name', $parameter)
+                    ->where('label_linguistik', $label)
+                    ->first();
+        return $result ? $result->nilai_crisp : null;
     }
 }
