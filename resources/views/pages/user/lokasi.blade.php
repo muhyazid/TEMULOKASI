@@ -106,11 +106,11 @@
         let selectedParameters = [];
 
         const parameters = {
-            makanan: ["Aksesibilitas", "Visibilitas", "Daya Beli Masyarakat", "Kompetitor / Persaingan",
-                "Ketersediaan Infrastruktur", "Lingkungan Sekitar"
+            makanan: ["Aksesibilitas", "Visibilitas", "Daya Beli Masyarakat", "Kompetitor",
+                "Ketersediaan Infrastruktur", "Lingkungan Sekitar", "Ketersediaan Parkir"
             ],
-            minuman: ["Aksesibilitas", "Visibilitas", "Daya Beli Masyarakat", "Kompetitor / Persaingan",
-                "Ketersediaan Infrastruktur", "Lingkungan Sekitar"
+            minuman: ["Aksesibilitas", "Visibilitas", "Daya Beli Masyarakat", "Kompetitor",
+                "Ketersediaan Infrastruktur", "Lingkungan Sekitar", "Ketersediaan Parkir"
             ]
         };
 
@@ -118,18 +118,20 @@
             "Aksesibilitas": "Kemudahan akses menuju lokasi oleh pelanggan.",
             "Visibilitas": "Seberapa mudah lokasi terlihat dari jalan utama atau keramaian.",
             "Daya Beli Masyarakat": "Kemampuan finansial masyarakat di sekitar lokasi.",
-            "Kompetitor / Persaingan": "Jumlah pesaing sejenis di sekitar lokasi.",
+            "Kompetitor ": "Jumlah pesaing sejenis di sekitar lokasi.",
             "Ketersediaan Infrastruktur": "Kelengkapan fasilitas penunjang seperti parkir, listrik, dll.",
-            "Lingkungan Sekitar": "Kondisi sosial dan keamanan lingkungan sekitar lokasi."
+            "Lingkungan Sekitar": "Kondisi sosial dan keamanan lingkungan sekitar lokasi.",
+            "Ketersediaan Parkir": "Luas lahan atau tempat parkir yang tersedia di lokasi."
         };
 
         const linguisticOptions = {
             "Aksesibilitas": ["Tidak Mudah", "Cukup Mudah", "Sangat Mudah"],
             "Visibilitas": ["Tidak Terlihat", "Terlihat Sebagian", "Sangat Terlihat"],
             "Daya Beli Masyarakat": ["Rendah", "Menengah", "Tinggi"],
-            "Kompetitor / Persaingan": ["< 2", "2 - 4", "> 4"],
+            "Kompetitor": ["< 2", "2 - 4", "> 4"],
             "Ketersediaan Infrastruktur": ["Tidak Lengkap", "Cukup", "Lengkap"],
-            "Lingkungan Sekitar": ["Tidak Mendukung", "Netral", "Sangat Mendukung"]
+            "Lingkungan Sekitar": ["Tidak Mendukung", "Netral", "Sangat Mendukung"],
+            "Ketersediaan Parkir": ["Sempit", "Cukup", "Luas"]
         };
 
         const crispMap = {
@@ -150,7 +152,10 @@
             "Lengkap": 8,
             "Tidak Mendukung": 2,
             "Netral": 5,
-            "Sangat Mendukung": 8
+            "Sangat Mendukung": 8,
+            "Sempit": 2,
+            "Cukup": 5,
+            "Luas": 8
         };
 
         function updateParameters() {
@@ -211,14 +216,14 @@
                                 const options = linguisticOptions[p] || ["Rendah", "Sedang", "Tinggi"];
                                 const description = parameterDescriptions[p] || "";
                                 return `
-                                                                            <div class="col-md-6 mb-3">
-                                                                                <label class="font-weight-bold">${p}</label>
-                                                                                <small class="form-text text-muted">${description}</small>
-                                                                                <select name="locations[${locationCount}][parameters][${p.replace(/\s+/g, '_').toLowerCase()}]" 
-                                                                                    class="form-control" id="ling_${locationCount}_${p.replace(/\s+/g, '_')}">
-                                                                                    ${options.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
-                                                                                </select>
-                                                                            </div>`;
+                                                                                                                        <div class="col-md-6 mb-3">
+                                                                                                                            <label class="font-weight-bold">${p}</label>
+                                                                                                                            <small class="form-text text-muted">${description}</small>
+                                                                                                                            <select name="locations[${locationCount}][parameters][${p.replace(/\s+/g, '_').toLowerCase()}]" 
+                                                                                                                                class="form-control" id="ling_${locationCount}_${p.replace(/\s+/g, '_')}">
+                                                                                                                                ${options.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
+                                                                                                                            </select>
+                                                                                                                        </div>`;
                             }).join("")}
                         </div>
                     </div>
@@ -272,5 +277,22 @@
                 crispDiv.innerHTML += html;
             }
         }
+        // Validasi sebelum submit
+        document.getElementById('lokasi-form').addEventListener('submit', function(e) {
+            let error = false;
+            for (let i = 1; i <= locationCount; i++) {
+                const lat = document.getElementById(`latitude_${i}`).value;
+                const lng = document.getElementById(`longitude_${i}`).value;
+                if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+                    error = true;
+                    break;
+                }
+            }
+
+            if (error) {
+                e.preventDefault();
+                alert('⚠️ Anda harus memilih lokasi dengan koordinat yang valid (latitude & longitude)!');
+            }
+        });
     </script>
 @endsection

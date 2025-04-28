@@ -20,6 +20,12 @@ Route::post('/lokasi/store', [LokasiController::class, 'store'])->name('lokasi.s
 Route::get('/hasil-rekomendasi', [HasilRekomendasiController::class, 'index'])->name('hasil-rekomendasi');
 Route::get('/manajemen-user', [ManajemenUserController::class, 'index'])->name('manajemen-user');
 Route::get('/konversi-crisp', [FuzzyController::class, 'konversiCrisp'])->name('konversi.crisp');
+// Untuk stepper fuzzy tsukamoto
+Route::get('/fuzzy', [FuzzyController::class, 'tsukamotoStepper'])->name('fuzzy.index');
+Route::post('/fuzzy/fuzzifikasi', [FuzzyController::class, 'hitungFuzzifikasi'])->name('fuzzy.fuzzifikasi');
+Route::get('/fuzzy', [FuzzyController::class, 'index'])->name('fuzzy.index');
+Route::post('/fuzzy/konversi', [FuzzyController::class, 'konversiCrisp'])->name('fuzzy.konversi');
+
 
 
 // =================== ADMIN ROUTES =================== //
