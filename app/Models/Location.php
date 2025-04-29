@@ -8,11 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Location extends Model
 {
     use HasFactory;
-   // Ini BENAR
     protected $fillable = ['name', 'type', 'latitude', 'longitude'];
-
-
-     public function parameters()
+    public function parameters()
     {
         return $this->hasMany(LocationParameter::class);
     }

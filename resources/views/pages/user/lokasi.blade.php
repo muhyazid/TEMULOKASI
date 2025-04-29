@@ -216,14 +216,14 @@
                                 const options = linguisticOptions[p] || ["Rendah", "Sedang", "Tinggi"];
                                 const description = parameterDescriptions[p] || "";
                                 return `
-                                                                                                                        <div class="col-md-6 mb-3">
-                                                                                                                            <label class="font-weight-bold">${p}</label>
-                                                                                                                            <small class="form-text text-muted">${description}</small>
-                                                                                                                            <select name="locations[${locationCount}][parameters][${p.replace(/\s+/g, '_').toLowerCase()}]" 
-                                                                                                                                class="form-control" id="ling_${locationCount}_${p.replace(/\s+/g, '_')}">
-                                                                                                                                ${options.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
-                                                                                                                            </select>
-                                                                                                                        </div>`;
+                                                                                                                            <div class="col-md-6 mb-3">
+                                                                                                                                <label class="font-weight-bold">${p}</label>
+                                                                                                                                <small class="form-text text-muted">${description}</small>
+                                                                                                                                <select name="locations[${locationCount}][parameters][${p.replace(/\s+/g, '_').toLowerCase()}]" 
+                                                                                                                                    class="form-control" id="ling_${locationCount}_${p.replace(/\s+/g, '_')}">
+                                                                                                                                    ${options.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
+                                                                                                                                </select>
+                                                                                                                            </div>`;
                             }).join("")}
                         </div>
                     </div>
